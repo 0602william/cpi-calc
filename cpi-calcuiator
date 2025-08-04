@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>소비자물가지수 계산기</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial; padding: 2rem; }
+    input, select, button { margin: 0.5rem; }
+    canvas { max-width: 600px; }
+  </style>
+</head>
+<body>
+  <h1>소비자물가지수(CPI) 기반 물가상승률 계산기</h1>
+
+  <label for="startDate">시작 날짜 (YYYYMM):</label>
+  <input type="text" id="startDate" placeholder="예: 202001" />
+  
+  <label for="endDate">종료 날짜 (YYYYMM):</label>
+  <input type="text" id="endDate" placeholder="예: 202501" />
+  
+  <button onclick="calculateCPI()">물가상승률 계산</button>
+  
+  <p id="result"></p>
+
+  <canvas id="cpiChart"></canvas>
+
+  <script>
+    const apiKey = "NGPRPTIQ1FRKENVWAMKG";
+
+    async function fetchCPI(date) {
+      const url = `https://ecos.bok.or.kr/api/StatisticSearch/json/${apiKey}/1/1000/901Y014/M/${date}/${date}/0000000`;
+      const response = await fetch(url);
+      const data = await response.json();
+      return parseFloat(data?.StatisticSearch?.row?.[0]?.DATA_VALUE ?? 0);
+    }
+
+    async function calculateCPI() {
+      const start = document.getElementById("startDate").value;
+      const end = document.getElementById("endDate").value;
+      if (!start || !end || start.length !== 6 || end.length !== 6) {
+        alert("YYYYMM 형식으로 입력해주세요.");
+        return;
+      }
+
+      const startCPI = await fetchCPI(start);
+      const endCPI = await fetchCPI(end);
+      if (startCPI === 0 || endCPI === 0) {
+        document.getElementById("result").textContent = "데이터를 불러올 수 없습니다.";
+        return;
+      }
+
+      const inflation = ((endCPI - startCPI) / startCPI * 100).toFixed(2);
+      document.getElementById("result").textContent =
+        `물가상승률: ${inflation}% (CPI: ${startCPI} → ${endCPI})`;
+
+      drawChart([start, end], [startCPI, endCPI]);
+    }
+
+    function drawChart(labels, data) {
+      const ctx = document.getElementById("cpiChart").getContext("2d");
+      if (window.cpiChart) window.cpiChart.destroy();
+      window.cpiChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "CPI",
+            data,
+            fill: false,
+            borderColor: "blue",
+            tension: 0.2
+          }]
+        },
+        options: {
+          scales: {
+            y: { beginAtZero: false }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
