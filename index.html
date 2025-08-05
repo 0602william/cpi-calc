@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>CPI 계산기</title>
+  <script defer src="script.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2rem;
+    }
+    input, select {
+      margin: 0.5rem 0;
+    }
+    canvas {
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>소비자물가지수(CPI) 계산기</h1>
+  
+  <label>기준 날짜:
+    <input type="month" id="baseDate" />
+  </label>
+  <br>
+  <label>비교 날짜:
+    <input type="month" id="compareDate" />
+  </label>
+  <br>
+  <button onclick="calculateCPI()">계산</button>
+  
+  <h2 id="result"></h2>
+
+  <canvas id="cpiChart" width="600" height="300"></canvas>
+</body>
+</html>
